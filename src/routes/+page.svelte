@@ -1,0 +1,200 @@
+<script lang="ts">
+	import { browser } from "$app/environment";
+  	import type { ColorData } from "$lib/ColorData";
+  	import ColorTile from "$lib/ColorTile.svelte";
+	import { onMount } from "svelte";
+	import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string"
+	import {Button, ContentContainer, TextInput} from "nota-ui"
+	export let currentColor:ColorData={
+		color:"#ffffff",
+		label:"label"
+	};
+	let columns = 5;
+	let rows = 2;
+	let colors:any=[];
+
+	let direction:string;
+
+	$: for (let row in [...Array(rows+1).keys()]){
+		colors.push([])
+	}
+
+	const onColorInputChange = () => {
+		// Force update of all colors
+		colors = colors
+		// Force update of color display
+		currentColor = currentColor
+		save()
+	}
+
+	const resetColors = ()=>{
+		colors.forEach((row: ColorData[]) => {
+			row.forEach( (column: ColorData) => {
+				column.color = "#FFFFFF"
+			})
+		});
+		onColorInputChange()
+	}
+
+	const load = ()=>{
+		var searchParams = new URLSearchParams(window.location.search)
+		let b64data = searchParams.get("data")
+		if (b64data!=null){
+			var data = decompressFromEncodedURIComponent(b64data).split(".")
+			rows = Number.parseInt(data[0])
+			columns = Number.parseInt(data[1])
+			console.log(atob(b64data).split("."))
+			console.log(rows)
+			console.log(columns)
+			for (let index=2;index<data.length-2;index++){
+				let entry = data[index].split(":")
+				let color = entry[0]
+				let row = entry[1]
+				let column = entry[2]
+				console.log(colors[row][column])
+				colors[row][column].color = color
+			}
+		}
+	}
+
+	const save = ()=>{
+		let data = [
+			rows,
+			columns,
+			`${colors[0][0].color}:0:0`,
+			`${colors[0][1].color}:0:1`
+		]
+		for(let row in [...Array(rows+1).keys()]){
+			if (row=="0"){
+				continue
+			}
+			for (let column in [...Array(columns).keys()]){
+				data.push(`${colors[row][column].color}:${row}:${column}`)
+			}
+		}
+		let dataToWrite = compressToEncodedURIComponent(data.join("."))
+		history.pushState({}, "", `${window.location.origin}?data=${dataToWrite}`)
+	}
+
+	onMount(()=>{
+		load()
+		currentColor=colors[0][0]
+	})
+
+</script>
+<ContentContainer>
+	<div class="controls">
+		<ContentContainer --contentContainerPaddingy="4rem" --contentContainerPaddingx="1rem" direction="column" alignment="flex-start">
+			<p>Controls</p>
+			<ContentContainer>
+				<div style="flex-grow:1;">
+					<TextInput on:change={onColorInputChange} on:enterPressed={onColorInputChange} captureEnter bind:text={currentColor.color}/>
+				</div>
+				<input on:change={onColorInputChange} bind:value={currentColor.color} type="color">
+			</ContentContainer>
+			<ContentContainer>
+				<Button on:click={()=>{direction="row";rows++;onColorInputChange()}}>
+					Add Row
+				</Button>
+				<Button on:click={()=>{if (rows > 0){ direction="row";rows--;onColorInputChange()}}}>
+					Remove Row
+				</Button>
+				<Button on:click={()=>{direction="column";columns++;onColorInputChange()}}>
+					Add Column
+				</Button>
+				<Button on:click={()=>{if (columns > 0){ direction="column";columns--;onColorInputChange()}}}>
+					Remove Column
+				</Button>
+				<Button on:click={resetColors}>
+					Reset Colors
+				</Button>
+			</ContentContainer>
+			
+		</ContentContainer>
+	</div>
+	
+	<ContentContainer direction="column">
+		<div class="bg" style:background-color={colors[0][0]?.color}>
+			<!-- <p>{currentColor.color}</p> -->
+			<!-- <p>{currentColor.label}</p> -->
+			<ContentContainer direction="column" alignment="flex-start">
+				<div>
+					<p>Bg/Fg</p>
+					<div class="row">
+						<ColorTile
+						bind:bgColor={colors[0][0]}
+						bind:direction={direction}
+						row={0}
+						column={0}
+						bind:group={currentColor}  bind:color={colors[0][0]}>
+						</ColorTile>
+						<ColorTile
+						bind:bgColor={colors[0][0]}
+						bind:direction={direction}
+						row={0}
+						column={1}
+						bind:group={currentColor} bind:color={colors[0][1]}>
+						</ColorTile>
+					</div>
+					<p>Accents</p>
+					{#each  [...Array(rows).keys()]  as rowsIndex}
+						<div class="row">
+							{#each [...Array(columns).keys()] as columnIndex}
+								<ColorTile
+								bind:bgColor={colors[0][0]}
+								bind:direction={direction}
+								row={rowsIndex+1}
+								column={columnIndex}
+								bind:group={currentColor} 
+								bind:color={colors[(rowsIndex+1)][columnIndex]}>
+								</ColorTile>
+							{/each}
+						</div>
+					{/each}
+				</div>
+			</ContentContainer>
+			
+		</div>
+	</ContentContainer>
+</ContentContainer>
+
+
+
+
+<style>
+	
+	.row {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: start;
+	}
+
+	.bg {
+		display: flex;
+		min-width: 100%;
+		width: fit-content;
+		flex-grow: 1;
+		padding: 2rem;
+		padding-top: 4rem;
+		min-height: 100vh;
+	}
+
+	@media only screen and (min-width: 1000px) {
+		.bg {
+			/* align-items: center; */
+			/* justify-content: center; */
+		}
+	}
+
+	.controls {
+		width: 100%;
+	}
+
+	@media only screen and (min-width: 1000px) {
+		.controls {
+			width: 30%;
+			align-self: flex-start;
+		}
+	}
+</style>
