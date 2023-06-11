@@ -42,7 +42,8 @@
 		var searchParams = new URLSearchParams(window.location.search)
 		let b64data = searchParams.get("data")
 		if (b64data!=null){
-			var data = decompressFromEncodedURIComponent(b64data).split(".")
+			var data = decodeURIComponent(escape(window.atob(b64data))).split(".")
+			console.log(data)
 			rows = Number.parseInt(data[0])
 			columns = Number.parseInt(data[1])
 			console.log(atob(b64data).split("."))
@@ -54,7 +55,7 @@
 				let row = entry[1]
 				let column = entry[2]
 				console.log(colors[row][column])
-				colors[row][column].color = color
+				colors[row][column].color = `#${color}`
 			}
 		}
 	}
@@ -63,18 +64,18 @@
 		let data = [
 			rows,
 			columns,
-			`${colors[0][0].color}:0:0`,
-			`${colors[0][1].color}:0:1`
+			`${colors[0][0].color.replace("#" ,"")}:0:0`,
+			`${colors[0][1].color.replace("#" ,"")}:0:1`
 		]
 		for(let row in [...Array(rows+1).keys()]){
 			if (row=="0"){
 				continue
 			}
 			for (let column in [...Array(columns).keys()]){
-				data.push(`${colors[row][column].color}:${row}:${column}`)
+				data.push(`${colors[row][column].color.replace("#" ,"")}:${row}:${column}`)
 			}
 		}
-		let dataToWrite = compressToEncodedURIComponent(data.join("."))
+		let dataToWrite = window.btoa(unescape(encodeURIComponent(data.join("."))))
 		history.pushState({}, "", `${window.location.origin}?data=${dataToWrite}`)
 	}
 
