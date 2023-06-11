@@ -5,6 +5,7 @@
 	import { onMount } from "svelte";
 	import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string"
 	import {Button, ContentContainer, TextInput} from "nota-ui"
+  import { HEX2RGB, contrast } from "$lib/colorUtils";
 	export let currentColor:ColorData={
 		color:"#ffffff",
 		label:"label"
@@ -12,7 +13,8 @@
 	let columns = 5;
 	let rows = 2;
 	let colors:any=[];
-
+	let mounted=false
+	let textColor: string
 	let direction:string;
 
 	$: for (let row in [...Array(rows+1).keys()]){
@@ -76,7 +78,14 @@
 		history.pushState({}, "", `${window.location.origin}?data=${dataToWrite}`)
 	}
 
+	$: if (mounted&&contrast(HEX2RGB(colors[0][0].color), {r:255, g:255, b:255})>contrast(HEX2RGB(colors[0][0].color), {r:0, g:0, b:0})){
+		textColor = "#ffffff"
+	} else {
+		textColor = "#000000"
+	}
+
 	onMount(()=>{
+		mounted = true
 		load()
 		currentColor=colors[0][0]
 	})
@@ -119,7 +128,7 @@
 			<!-- <p>{currentColor.label}</p> -->
 			<ContentContainer direction="column" alignment="flex-start">
 				<div>
-					<p>Bg/Fg</p>
+					<p style:color={textColor}>Bg/Fg</p>
 					<div class="row">
 						<ColorTile
 						bind:bgColor={colors[0][0]}
@@ -136,7 +145,7 @@
 						bind:group={currentColor} bind:color={colors[0][1]}>
 						</ColorTile>
 					</div>
-					<p>Accents</p>
+					<p style:color={textColor}>Accents</p>
 					{#each  [...Array(rows).keys()]  as rowsIndex}
 						<div class="row">
 							{#each [...Array(columns).keys()] as columnIndex}
