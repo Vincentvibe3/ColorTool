@@ -20,18 +20,25 @@
 
 	let textColor = "#ffffff"
 	let borderColor = "#ffffff"
+	let dark = false
 
 	$: if (contrast(HEX2RGB(color.color as string), {r:255, g:255, b:255})>contrast(HEX2RGB(color.color as string), {r:0, g:0, b:0})){
 		textColor = "#ffffff"
 		let hsv = HEX2HSV(color.color)
 		hsv.v=hsv.v+0.3
 		borderColor=HSV2HEX(hsv)
+		dark = true
 	} else {
 		textColor = "#000000"
 		let hsv = HEX2HSV(color.color)
 		hsv.v=hsv.v-0.3
+		dark = false
 		borderColor=HSV2HEX(hsv)
 	}
+
+	let checked: boolean
+
+	$: checked = group==color
 	
 	export let direction:string;
 	let flyParams:FlyParams;
@@ -64,7 +71,8 @@ out:fly="{flyParams}"
 	style:background-color={color.color} 
 	style:color={textColor}
 	style:outline-color={borderColor}
-	class="colorChip">
+	class:selected={checked}
+	class:colorChip={true} class:dark class:light={!dark}>
 		{Math.round(contrastValue*100)/100}
 	</button>
 </div>
@@ -81,5 +89,27 @@ out:fly="{flyParams}"
 		border: none;
 		border-radius: 0.5rem;
 		margin: 0.5rem;
+		transition: all 0.2s ease-in-out;
+		font: var(--body);
+	}
+
+	.colorChip.selected{
+		outline-width: 0.25rem;
+	}
+
+	.colorChip.light:hover {
+		filter: brightness(0.8);
+	}
+
+	.colorChip.dark:hover {
+		filter: brightness(1.2);
+	}
+
+	.colorChip.light:active {
+		filter: brightness(0.6);
+	}
+
+	.colorChip.dark:active {
+		filter: brightness(1.4);
 	}
 </style>
