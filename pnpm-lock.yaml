@@ -5,8 +5,8 @@ dependencies:
     specifier: ^1.5.0
     version: 1.5.0
   nota-ui:
-    specifier: 0.0.16-alpha
-    version: 0.0.16-alpha
+    specifier: 0.0.19-alpha
+    version: 0.0.19-alpha
 
 devDependencies:
   '@sveltejs/adapter-auto':
@@ -695,8 +695,8 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /nota-ui@0.0.16-alpha:
-    resolution: {integrity: sha512-fxXt6H46iTvtGTcRZBVuylEjV2PThyk+Dwv6x6pYujOGFS5McL7JTgnEn5XH81avl9T632krNYvJUV9roSW8kQ==}
+  /nota-ui@0.0.19-alpha:
+    resolution: {integrity: sha512-oz1K+vuv+lmNnX2WCn5iwS7FobRgDowuBfL6klii4ICoxfCKYzauMnMIB7bAhaDHshBLk1BltoduuZDQe+fBfg==}
     dependencies:
       svelte: 3.59.1
     dev: false

@@ -2,6 +2,7 @@
 	import { fly, type FlyParams } from "svelte/transition";
   	import type { ColorData } from "./ColorData";
   	import { contrast, HEX2HSV, HEX2RGB, HSV2HEX } from "./colorUtils";
+  import { createEventDispatcher } from "svelte";
 	export let row:number;
 	export let column:number;
 	export let color:ColorData={
@@ -15,6 +16,8 @@
 
 	export let group:ColorData;
 	export let contrastValue=0; 
+
+	const dispatch = createEventDispatcher();
 
 	$: contrastValue=contrast(HEX2RGB(color.color as string), HEX2RGB(bgColor.color as string))
 
@@ -53,6 +56,7 @@
 
 	const onClick = ()=>{
 		checkbox.click()
+		dispatch("click");
 	}
 
 </script>

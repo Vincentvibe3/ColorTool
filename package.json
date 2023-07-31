@@ -21,6 +21,6 @@
 	"type": "module",
 	"dependencies": {
 		"lz-string": "^1.5.0",
-		"nota-ui": "0.0.16-alpha"
+		"nota-ui": "0.0.19-alpha"
 	}
 }

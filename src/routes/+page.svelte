@@ -4,8 +4,9 @@
   	import ColorTile from "$lib/ColorTile.svelte";
 	import { onMount } from "svelte";
 	import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string"
-	import {Button, ContentContainer, TextInput} from "nota-ui"
-  import { HEX2RGB, contrast } from "$lib/colorUtils";
+	import {Button, ContentContainer, TextInput, ColorPicker} from "nota-ui"
+  	import { HEX2RGB, contrast } from "$lib/colorUtils";
+	let tempColor = "#ffffff"
 	export let currentColor:ColorData={
 		color:"#ffffff",
 		label:"label"
@@ -21,12 +22,22 @@
 		colors.push([])
 	}
 
+	const tileClicked = () => {
+		tempColor = currentColor.color
+		colors = colors
+	}
+
 	const onColorInputChange = () => {
 		// Force update of all colors
 		colors = colors
 		// Force update of color display
 		currentColor = currentColor
 		save()
+	}
+
+	$: if (mounted){
+		currentColor.color = tempColor
+		onColorInputChange()
 	}
 
 	const resetColors = ()=>{
@@ -86,23 +97,26 @@
 	}
 
 	onMount(()=>{
-		mounted = true
 		load()
 		currentColor=colors[0][0]
+		tempColor = currentColor.color
+		console.log(tempColor)
+		mounted = true
 	})
 
 </script>
 <ContentContainer>
 	<div class="controls">
-		<ContentContainer --contentContainerPaddingy="4rem" --contentContainerPaddingx="1rem" direction="column" alignment="flex-start">
-			<p>Controls</p>
-			<ContentContainer>
-				<div style="flex-grow:1;">
+		<p>Controls</p>
+		<ContentContainer --contentContainerPaddingy="4rem" --contentContainerPaddingx="1rem" alignment="flex-start">
+			<!-- <ContentContainer> -->
+				<ColorPicker bind:text={tempColor}></ColorPicker>
+				<!-- <div style="flex-grow:1;">
 					<TextInput on:change={onColorInputChange} on:enterPressed={onColorInputChange} captureEnter bind:text={currentColor.color}/>
 				</div>
-				<input on:change={onColorInputChange} bind:value={currentColor.color} type="color">
-			</ContentContainer>
-			<ContentContainer>
+				<input on:change={onColorInputChange} bind:value={currentColor.color} type="color"> -->
+			<!-- </ContentContainer> -->
+			<ContentContainer direction="row">
 				<Button on:click={()=>{direction="row";rows++;onColorInputChange()}}>
 					Add Row
 				</Button>
@@ -132,6 +146,7 @@
 					<p style:color={textColor}>Bg/Fg</p>
 					<div class="row">
 						<ColorTile
+						on:click={tileClicked}
 						bind:bgColor={colors[0][0]}
 						bind:direction={direction}
 						row={0}
@@ -151,6 +166,7 @@
 						<div class="row">
 							{#each [...Array(columns).keys()] as columnIndex}
 								<ColorTile
+								on:click={tileClicked}
 								bind:bgColor={colors[0][0]}
 								bind:direction={direction}
 								row={rowsIndex+1}
