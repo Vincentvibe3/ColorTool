@@ -25,6 +25,7 @@
 	const tileClicked = () => {
 		tempColor = currentColor.color
 		colors = colors
+		onColorInputChange()
 	}
 
 	const onColorInputChange = () => {
@@ -60,34 +61,51 @@
 			console.log(atob(b64data).split("."))
 			console.log(rows)
 			console.log(columns)
-			for (let index=2;index<data.length-2;index++){
+			for (let index=2;index<data.length;index++){
 				let entry = data[index].split(":")
 				let color = entry[0]
 				let row = entry[1]
+				
 				let column = entry[2]
-				console.log(colors[row][column])
-				colors[row][column].color = `#${color}`
+				if (colors[row]===undefined){
+					colors.push([])
+				}
+				if (colors[row][column]===undefined){
+					colors[row][column] = {
+						color:`#${color}`,
+						label:`${row} ${column}`
+					}
+				} else {
+					colors[row][column].color = `#${color}`
+				}
 			}
 		}
 	}
 
 	const save = ()=>{
-		let data = [
-			rows,
-			columns,
-			`${colors[0][0].color.replace("#" ,"")}:0:0`,
-			`${colors[0][1].color.replace("#" ,"")}:0:1`
-		]
-		for(let row in [...Array(rows+1).keys()]){
-			if (row=="0"){
-				continue
+		console.log(colors)
+		console.log(rows)
+		console.log(columns)
+		if (mounted){
+			let data = [
+				rows,
+				columns,
+				`${colors[0][0].color.replace("#" ,"")}:0:0`,
+				`${colors[0][1].color.replace("#" ,"")}:0:1`
+			]
+			for(let row in [...Array(rows+1).keys()]){
+				if (row=="0"){
+					continue
+				}
+				for (let column in [...Array(columns).keys()]){
+					console.log(column)
+					data.push(`${colors[row][column].color.replace("#" ,"")}:${row}:${column}`)
+				}
 			}
-			for (let column in [...Array(columns).keys()]){
-				data.push(`${colors[row][column].color.replace("#" ,"")}:${row}:${column}`)
-			}
+			let dataToWrite = window.btoa(unescape(encodeURIComponent(data.join("."))))
+			history.pushState({}, "", `${window.location.origin}?data=${dataToWrite}`)
 		}
-		let dataToWrite = window.btoa(unescape(encodeURIComponent(data.join("."))))
-		history.pushState({}, "", `${window.location.origin}?data=${dataToWrite}`)
+		
 	}
 
 	$: if (mounted&&contrast(HEX2RGB(colors[0][0].color), {r:255, g:255, b:255})>contrast(HEX2RGB(colors[0][0].color), {r:0, g:0, b:0})){
@@ -100,7 +118,6 @@
 		load()
 		currentColor=colors[0][0]
 		tempColor = currentColor.color
-		console.log(tempColor)
 		mounted = true
 	})
 
@@ -154,6 +171,7 @@
 						bind:group={currentColor}  bind:color={colors[0][0]}>
 						</ColorTile>
 						<ColorTile
+						on:click={tileClicked}
 						bind:bgColor={colors[0][0]}
 						bind:direction={direction}
 						row={0}
